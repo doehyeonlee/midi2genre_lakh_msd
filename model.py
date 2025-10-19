@@ -104,21 +104,17 @@ class CombinedCNNModel(nn.Module):
         self.dropout = nn.Dropout(0.3)
     
     def forward(self, features, piano_roll):
-        # Add channel dimension: (batch, 128, 1000) -> (batch, 1, 128, 1000)
         pr = piano_roll.unsqueeze(1)
         pr = self.pool1(F.relu(self.conv1(pr)))
         pr = self.pool2(F.relu(self.conv2(pr)))
         pr = self.pool3(F.relu(self.conv3(pr)))
         
-        # Flatten
         pr = pr.view(pr.size(0), -1)
         pr = F.relu(self.piano_fc(pr))
         pr = self.dropout(pr)
         
-        # Process features
         feat = F.relu(self.feature_fc(features))
         
-        # Combine
         x = torch.cat([pr, feat], dim=1)
         x = F.relu(self.fc1(x))
         x = self.dropout(x)
@@ -151,7 +147,6 @@ class CombinedRNNModel(nn.Module):
         self.dropout = nn.Dropout(0.3)
     
     def forward(self, features, piano_roll):
-        # Process piano roll with LSTM
         # Transpose: (batch, 128, 1000) -> (batch, 1000, 128)
         pr = piano_roll.transpose(1, 2)
         
