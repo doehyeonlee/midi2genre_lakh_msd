@@ -25,16 +25,18 @@ def test_model(model, dataloader, device, model_type):
                 features = features.to(device)
                 labels = labels.to(device)
                 outputs = model(features)
+            elif model_type == 'piano_roll':
+                features, piano_rolls, labels = batch_data
+                features = features.to(device)
+                piano_rolls = piano_rolls.to(device)
+                labels = labels.to(device)
+                outputs = model(piano_rolls)
             else:
                 features, piano_rolls, labels = batch_data
                 features = features.to(device)
                 piano_rolls = piano_rolls.to(device)
                 labels = labels.to(device)
-                
-                if model_type == 'piano_roll':
-                    outputs = model(features, piano_rolls) 
-                else:  # combined models
-                    outputs = model(features, piano_rolls)
+                outputs = model(features, piano_rolls)
             
             _, predicted = torch.max(outputs.data, 1)
             total += labels.size(0)
@@ -63,6 +65,7 @@ def load_and_test(model_path,
     checkpoint = torch.load(model_path, map_location=device, weights_only=False)
     
     model_type = checkpoint['model_type']
+    print(model_type)
     feature_dim = checkpoint['feature_dim']
     piano_roll_shape = checkpoint['piano_roll_shape']
     num_classes = checkpoint['num_classes']
